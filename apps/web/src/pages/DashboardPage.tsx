@@ -4,6 +4,8 @@ import { MetricCard } from '../components/MetricCard';
 import { MonthPicker } from '../components/MonthPicker';
 import { TopServersTable } from '../components/TopServersTable';
 import { TopUsersTable } from '../components/TopUsersTable';
+import { RateLimitAbusersTable } from '../components/RateLimitAbusersTable';
+import { TopAbusersTable } from '../components/TopAbusersTable';
 import { BlockedUsersPanel } from '../components/BlockedUsersPanel';
 import { BotStatus } from '../components/BotStatus';
 import { ConsolePanel } from '../components/ConsolePanel';
@@ -18,7 +20,7 @@ export function DashboardPage() {
   const [blockedLoading, setBlockedLoading] = useState(true);
   const [blockedError, setBlockedError] = useState<string | null>(null);
 
-  const { overview, users, servers, loading, error, refresh } = useMetrics(
+  const { overview, users, servers, rateLimitAbusers, topAbusers, loading, error, refresh } = useMetrics(
     month,
     'UTC',
     1,
@@ -82,6 +84,14 @@ export function DashboardPage() {
             <section className="mt-6 grid gap-4 lg:grid-cols-2">
               <TopUsersTable rows={users?.rows ?? []} blockedUserIds={new Set(blockedUsers.map((row) => row.user_id))} onToggleBlock={toggleUserBlock} />
               <TopServersTable rows={servers?.rows ?? []} />
+            </section>
+
+            <section className="mt-6">
+              <RateLimitAbusersTable rows={rateLimitAbusers?.rows ?? []} />
+            </section>
+
+            <section className="mt-6">
+              <TopAbusersTable rows={topAbusers?.rows ?? []} />
             </section>
 
             <BlockedUsersPanel rows={blockedUsers} loading={blockedLoading} error={blockedError} onBlock={async (userId) => { await apiPost('/api/blocks/users', { user_id: userId }); await loadBlockedUsers(); }} onUnblock={async (userId) => { await apiDelete(`/api/blocks/users/${userId}`); await loadBlockedUsers(); }} />

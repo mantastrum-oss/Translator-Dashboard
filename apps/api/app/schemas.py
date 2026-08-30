@@ -211,6 +211,36 @@ class GuildsResponse(BaseModel):
     rows: list[GuildRow]
 
 
+class RateLimitAbuserRow(BaseModel):
+    rank: int
+    user_id: str
+    blocked_attempts: int
+    guild_count: int
+    first_blocked_at: datetime
+    last_blocked_at: datetime
+
+
+class RateLimitAbusersResponse(BaseModel):
+    start: date
+    end: date
+    rows: list[RateLimitAbuserRow]
+
+
+class TopAbuserRow(BaseModel):
+    rank: int
+    user_id: str
+    request_count: int
+    successful_count: int
+    failed_count: int
+    success_rate: float
+
+
+class TopAbusersResponse(BaseModel):
+    start: date
+    end: date
+    rows: list[TopAbuserRow]
+
+
 class MetricsQuery(BaseModel):
     month: MonthParam
     tz: str = "UTC"

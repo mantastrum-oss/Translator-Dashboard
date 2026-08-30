@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     app_env: str = "development"
     api_port: int = 8000
     cors_origins: str = "http://localhost:5173"
+    analytics_rate_limit_per_minute: int = 120
 
     model_config = SettingsConfigDict(
         env_file=ROOT_ENV_FILE,

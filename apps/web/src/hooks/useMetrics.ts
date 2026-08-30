@@ -7,12 +7,16 @@ import type {
   PaginatedUsersResponse
   ,DashboardSummaryResponse
   ,GuildsResponse
+  ,RateLimitAbusersResponse
+  ,TopAbusersResponse
 } from '../types/metrics';
 
 interface MetricsState {
   overview: OverviewResponse | null;
   users: PaginatedUsersResponse | null;
   servers: PaginatedServersResponse | null;
+  rateLimitAbusers: RateLimitAbusersResponse | null;
+  topAbusers: TopAbusersResponse | null;
   loading: boolean;
   error: string | null;
   lastUpdated: string | null;
@@ -23,6 +27,8 @@ export function useMetrics(month: string, tz: string, usersPage = 1, serversPage
     overview: null,
     users: null,
     servers: null,
+    rateLimitAbusers: null,
+    topAbusers: null,
     loading: true,
     error: null,
     lastUpdated: null
@@ -33,10 +39,12 @@ export function useMetrics(month: string, tz: string, usersPage = 1, serversPage
     const monthEnd = new Date(Date.UTC(year, monthNumber, 0)).toISOString().slice(0, 10);
     setState((s) => ({ ...s, loading: true, error: null }));
     try {
-      const [summary, guilds, users] = await Promise.all([
+      const [summary, guilds, users, rateLimitAbusers, topAbusers] = await Promise.all([
         apiGet<DashboardSummaryResponse>('/api/dashboard/summary', { start: `${month}-01`, end: monthEnd }),
         apiGet<GuildsResponse>('/api/dashboard/guilds', { start: `${month}-01`, end: monthEnd }),
-        apiGet<PaginatedUsersResponse>('/api/dashboard/users', { start: `${month}-01`, end: monthEnd, page: usersPage, page_size: pageSize })
+        apiGet<PaginatedUsersResponse>('/api/dashboard/users', { start: `${month}-01`, end: monthEnd, page: usersPage, page_size: pageSize }),
+        apiGet<RateLimitAbusersResponse>('/api/dashboard/rate-limit-abusers', { start: `${month}-01`, end: monthEnd, limit: 20 }),
+        apiGet<TopAbusersResponse>('/api/dashboard/top-abusers', { start: `${month}-01`, end: monthEnd, limit: 20 })
       ]);
 
       const overview: OverviewResponse = {
@@ -62,6 +70,8 @@ export function useMetrics(month: string, tz: string, usersPage = 1, serversPage
         overview,
         users,
         servers,
+        rateLimitAbusers,
+        topAbusers,
         loading: false,
         error: null,
         lastUpdated: new Date().toISOString()

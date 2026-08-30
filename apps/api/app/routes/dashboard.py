@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.schemas import DashboardErrorsResponse, DashboardSummaryResponse, GuildsResponse, PaginatedUsersResponse, SourcesResponse, TimeseriesResponse
+from app.schemas import DashboardErrorsResponse, DashboardSummaryResponse, GuildsResponse, PaginatedUsersResponse, RateLimitAbusersResponse, SourcesResponse, TimeseriesResponse, TopAbusersResponse
 from app.services.metrics_service import MetricsService
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
@@ -54,3 +54,25 @@ def users(
 ):
     resolved_start, resolved_end = _dates(start, end)
     return MetricsService(db).dashboard_users(resolved_start, resolved_end, page, page_size)
+
+
+@router.get("/rate-limit-abusers", response_model=RateLimitAbusersResponse)
+def rate_limit_abusers(
+    start: date | None = None,
+    end: date | None = None,
+    limit: int = Query(default=20, ge=1, le=200),
+    db: Session = Depends(get_db),
+):
+    resolved_start, resolved_end = _dates(start, end)
+    return MetricsService(db).dashboard_rate_limit_abusers(resolved_start, resolved_end, limit)
+
+
+@router.get("/top-abusers", response_model=TopAbusersResponse)
+def top_abusers(
+    start: date | None = None,
+    end: date | None = None,
+    limit: int = Query(default=20, ge=1, le=200),
+    db: Session = Depends(get_db),
+):
+    resolved_start, resolved_end = _dates(start, end)
+    return MetricsService(db).dashboard_top_abusers(resolved_start, resolved_end, limit)

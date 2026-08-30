@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.auth import require_analytics_api_key, require_dashboard_auth
 from app.config import get_settings
+from app.rate_limit import enforce_analytics_rate_limit
 from app.routes.events import router as events_router
 from app.routes.health import router as health_router
 from app.routes.metrics import router as metrics_router
@@ -28,7 +29,7 @@ app.add_middleware(
 )
 
 app.include_router(health_router)
-app.include_router(events_router, dependencies=[Depends(require_analytics_api_key)])
+app.include_router(events_router, dependencies=[Depends(require_analytics_api_key), Depends(enforce_analytics_rate_limit)])
 app.include_router(metrics_router, dependencies=[Depends(require_dashboard_auth)])
 app.include_router(dashboard_router, dependencies=[Depends(require_dashboard_auth)])
 app.include_router(blocks_router, dependencies=[Depends(require_dashboard_auth)])

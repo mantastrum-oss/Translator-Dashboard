@@ -19,10 +19,14 @@ from app.schemas import (
     DashboardSummaryResponse,
     GuildRow,
     GuildsResponse,
+    RateLimitAbuserRow,
+    RateLimitAbusersResponse,
     SourceRow,
     SourcesResponse,
     TimeseriesResponse,
     TimeseriesRow,
+    TopAbuserRow,
+    TopAbusersResponse,
 )
 from app.utils.time import month_bounds_utc, now_utc
 
@@ -96,6 +100,65 @@ class MetricsService:
         ).where(*filters).group_by(TranslationEvent.guild_id).order_by(func.count(TranslationEvent.id).desc())
         rows = [GuildRow(guild_id=str(row.guild_id), translations=int(row.translations or 0), successful=int(row.successful or 0), characters=int(row.characters or 0)) for row in self.db.execute(stmt)]
         return GuildsResponse(start=start, end=end, rows=rows)
+
+    def dashboard_rate_limit_abusers(self, start: date, end: date, limit: int) -> RateLimitAbusersResponse:
+        filters = self._dashboard_filter(start, end, None) + [TranslationEvent.error_code == "rate_limited"]
+        stmt = (
+            select(
+                TranslationEvent.user_id,
+                func.count(TranslationEvent.id).label("blocked_attempts"),
+                func.count(func.distinct(TranslationEvent.guild_id)).filter(TranslationEvent.guild_id.is_not(None)).label("guild_count"),
+                func.min(TranslationEvent.created_at_utc).label("first_blocked_at"),
+                func.max(TranslationEvent.created_at_utc).label("last_blocked_at"),
+            )
+            .where(*filters)
+            .group_by(TranslationEvent.user_id)
+            .order_by(func.count(TranslationEvent.id).desc(), func.max(TranslationEvent.created_at_utc).desc())
+            .limit(limit)
+        )
+        rows = [
+            RateLimitAbuserRow(
+                rank=index + 1,
+                user_id=row.user_id,
+                blocked_attempts=int(row.blocked_attempts or 0),
+                guild_count=int(row.guild_count or 0),
+                first_blocked_at=row.first_blocked_at,
+                last_blocked_at=row.last_blocked_at,
+            )
+            for index, row in enumerate(self.db.execute(stmt))
+        ]
+        return RateLimitAbusersResponse(start=start, end=end, rows=rows)
+
+    def dashboard_top_abusers(self, start: date, end: date, limit: int) -> TopAbusersResponse:
+        filters = self._dashboard_filter(start, end, None)
+        stmt = (
+            select(
+                TranslationEvent.user_id,
+                func.count(TranslationEvent.id).label("request_count"),
+                func.sum(case((TranslationEvent.success.is_(True), 1), else_=0)).label("successful_count"),
+                func.sum(case((TranslationEvent.success.is_(False), 1), else_=0)).label("failed_count"),
+            )
+            .where(*filters)
+            .group_by(TranslationEvent.user_id)
+            .order_by(func.count(TranslationEvent.id).desc())
+            .limit(limit)
+        )
+        rows = []
+        for index, row in enumerate(self.db.execute(stmt)):
+            request_count = int(row.request_count or 0)
+            successful_count = int(row.successful_count or 0)
+            failed_count = int(row.failed_count or 0)
+            rows.append(
+                TopAbuserRow(
+                    rank=index + 1,
+                    user_id=row.user_id,
+                    request_count=request_count,
+                    successful_count=successful_count,
+                    failed_count=failed_count,
+                    success_rate=round(successful_count / request_count, 4) if request_count else 0.0,
+                )
+            )
+        return TopAbusersResponse(start=start, end=end, rows=rows)
 
     def dashboard_users(self, start: date, end: date, page: int, page_size: int) -> PaginatedUsersResponse:
         filters = self._dashboard_filter(start, end, None)

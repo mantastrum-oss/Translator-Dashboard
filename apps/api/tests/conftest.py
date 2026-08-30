@@ -10,6 +10,9 @@ os.environ.setdefault(
     "postgresql+psycopg://translator:translator@postgres:5432/translator_analytics",
 )
 os.environ.setdefault("API_KEY", "test-key")
+# override so real Supabase keys in the repo .env can't leak into test auth
+os.environ["ANALYTICS_API_KEY"] = "test-key"
+os.environ["DASHBOARD_API_KEY"] = "test-key"
 os.environ.setdefault("CORS_ORIGINS", "http://localhost:5173")
 
 from app.db import Base, engine  # noqa: E402

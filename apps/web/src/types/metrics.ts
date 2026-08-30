@@ -114,6 +114,36 @@ export interface GuildsResponse {
   rows: Array<{ guild_id: string; translations: number; successful: number; characters: number }>;
 }
 
+export interface RateLimitAbuserRow {
+  rank: number;
+  user_id: string;
+  blocked_attempts: number;
+  guild_count: number;
+  first_blocked_at: string;
+  last_blocked_at: string;
+}
+
+export interface RateLimitAbusersResponse {
+  start: string;
+  end: string;
+  rows: RateLimitAbuserRow[];
+}
+
+export interface TopAbuserRow {
+  rank: number;
+  user_id: string;
+  request_count: number;
+  successful_count: number;
+  failed_count: number;
+  success_rate: number;
+}
+
+export interface TopAbusersResponse {
+  start: string;
+  end: string;
+  rows: TopAbuserRow[];
+}
+
 export interface BlockedUserRow {
   user_id: string;
   blocked_at: string;
