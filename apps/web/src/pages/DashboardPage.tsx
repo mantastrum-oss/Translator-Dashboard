@@ -8,7 +8,6 @@ import { RateLimitAbusersTable } from '../components/RateLimitAbusersTable';
 import { TopAbusersTable } from '../components/TopAbusersTable';
 import { BlockedUsersPanel } from '../components/BlockedUsersPanel';
 import { BotStatus } from '../components/BotStatus';
-import { ConsolePanel } from '../components/ConsolePanel';
 import { useMetrics } from '../hooks/useMetrics';
 import { apiDelete, apiGet, apiPost } from '../api/client';
 import type { BlockedUserRow, BlockedUsersResponse } from '../types/metrics';
@@ -77,7 +76,6 @@ export function DashboardPage() {
               {loading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" role="status" aria-label="Refreshing" />}
               <span>{loading ? 'Refreshing...' : 'Refresh Now'}</span>
             </button>
-            <ConsolePanel />
           </div>
         </header>
 

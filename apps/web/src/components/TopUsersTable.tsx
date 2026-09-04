@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 
 import type { UserRow } from '../types/metrics';
-import { ConsolePanel } from './ConsolePanel';
 
 interface TopUsersTableProps {
   rows: UserRow[];
@@ -41,7 +40,7 @@ export function TopUsersTable({ rows, page, pageSize, totalRows, onPageChange, b
                 <td className="py-2"><span className="mr-2 font-mono">{row.user_id}</span><button type="button" onClick={() => void copyId(row.user_id)} title="Copy user ID" aria-label={`Copy ${row.user_id}`} className="rounded-md border border-ink/20 px-2 py-1 text-xs font-semibold text-ink/70 transition hover:border-accent hover:text-accent focus:outline-none focus:ring-2 focus:ring-accent/30">Copy</button></td>
                 <td className="py-2">{row.translated_characters}</td>
                 <td className="py-2">{row.failed_events}</td>
-                <td className="py-2 text-right"><div className="flex justify-end gap-2"><ConsolePanel /><button type="button" onClick={() => void onToggleBlock(row.user_id, !blockedUserIds.has(row.user_id))} className={`rounded-md border px-2 py-1 text-xs font-semibold transition focus:outline-none focus:ring-2 focus:ring-accent/30 ${blockedUserIds.has(row.user_id) ? 'border-accent/30 text-accent hover:border-coral hover:text-coral' : 'border-coral/30 text-coral hover:bg-coral/10'}`}>{blockedUserIds.has(row.user_id) ? 'Unblock' : 'Block'}</button></div></td>
+                <td className="py-2 text-right"><div className="flex justify-end gap-2"><button type="button" onClick={() => void onToggleBlock(row.user_id, !blockedUserIds.has(row.user_id))} className={`rounded-md border px-2 py-1 text-xs font-semibold transition focus:outline-none focus:ring-2 focus:ring-accent/30 ${blockedUserIds.has(row.user_id) ? 'border-accent/30 text-accent hover:border-coral hover:text-coral' : 'border-coral/30 text-coral hover:bg-coral/10'}`}>{blockedUserIds.has(row.user_id) ? 'Unblock' : 'Block'}</button></div></td>
               </tr>
             ))}
           </tbody>

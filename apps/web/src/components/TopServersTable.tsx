@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 
 import type { ServerRow } from '../types/metrics';
-import { ConsolePanel } from './ConsolePanel';
 
 interface TopServersTableProps {
   rows: ServerRow[];
@@ -30,7 +29,6 @@ export function TopServersTable({ rows, page, pageSize, totalRows, onPageChange 
               <th className="py-2">Server ID</th>
               <th className="py-2"><button type="button" onClick={() => setAscending((value) => !value)}>Characters</button></th>
               <th className="py-2">Failed</th>
-              <th className="py-2 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -39,7 +37,6 @@ export function TopServersTable({ rows, page, pageSize, totalRows, onPageChange 
                 <td className="py-2 pr-2"><span className="mr-2 font-mono">{row.guild_id}</span><button type="button" onClick={() => void copyId(row.guild_id)} title="Copy server ID" aria-label={`Copy ${row.guild_id}`} className="rounded-md border border-ink/20 px-2 py-1 text-xs font-semibold text-ink/70 transition hover:border-accent hover:text-accent focus:outline-none focus:ring-2 focus:ring-accent/30">Copy</button></td>
                 <td className="py-2">{row.translated_characters}</td>
                 <td className="py-2">{row.failed_events}</td>
-                <td className="py-2 text-right"><ConsolePanel /></td>
               </tr>
             ))}
           </tbody>
