@@ -4,8 +4,8 @@ from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-ROOT_ENV_FILE = Path(__file__).resolve().parents[3] / ".env"
-
+_parents = Path(__file__).resolve().parents
+ROOT_ENV_FILE = (_parents[3] if len(_parents) > 3 else _parents[-1]) / ".env"
 
 class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://translator:translator@localhost:5432/translator_analytics"
