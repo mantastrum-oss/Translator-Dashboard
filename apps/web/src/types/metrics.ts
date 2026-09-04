@@ -111,6 +111,9 @@ export interface DashboardSummaryResponse {
 export interface GuildsResponse {
   start: string;
   end: string;
+  page: number;
+  page_size: number;
+  total_rows: number;
   rows: Array<{ guild_id: string; translations: number; successful: number; characters: number }>;
 }
 
@@ -118,6 +121,7 @@ export interface RateLimitAbuserRow {
   rank: number;
   user_id: string;
   blocked_attempts: number;
+  attempted_characters: number;
   guild_count: number;
   first_blocked_at: string;
   last_blocked_at: string;

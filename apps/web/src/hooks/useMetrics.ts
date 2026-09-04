@@ -41,7 +41,7 @@ export function useMetrics(month: string, tz: string, usersPage = 1, serversPage
     try {
       const [summary, guilds, users, rateLimitAbusers, topAbusers] = await Promise.all([
         apiGet<DashboardSummaryResponse>('/api/dashboard/summary', { start: `${month}-01`, end: monthEnd }),
-        apiGet<GuildsResponse>('/api/dashboard/guilds', { start: `${month}-01`, end: monthEnd }),
+        apiGet<GuildsResponse>('/api/dashboard/guilds', { start: `${month}-01`, end: monthEnd, page: serversPage, page_size: pageSize }),
         apiGet<PaginatedUsersResponse>('/api/dashboard/users', { start: `${month}-01`, end: monthEnd, page: usersPage, page_size: pageSize }),
         apiGet<RateLimitAbusersResponse>('/api/dashboard/rate-limit-abusers', { start: `${month}-01`, end: monthEnd, limit: 20 }),
         apiGet<TopAbusersResponse>('/api/dashboard/top-abusers', { start: `${month}-01`, end: monthEnd, limit: 20 })
@@ -62,7 +62,7 @@ export function useMetrics(month: string, tz: string, usersPage = 1, serversPage
         }
       };
       const servers: PaginatedServersResponse = {
-        month, timezone: tz, page: 1, page_size: pageSize, total_rows: guilds.rows.length,
+        month, timezone: tz, page: guilds.page, page_size: guilds.page_size, total_rows: guilds.total_rows,
         rows: guilds.rows.map((row) => ({ guild_id: row.guild_id, translated_characters: row.characters, successful_events: row.successful, failed_events: row.translations - row.successful }))
       };
 

@@ -5,11 +5,15 @@ import { ConsolePanel } from './ConsolePanel';
 
 interface TopUsersTableProps {
   rows: UserRow[];
+  page: number;
+  pageSize: number;
+  totalRows: number;
+  onPageChange: (page: number) => void;
   blockedUserIds: Set<string>;
   onToggleBlock: (userId: string, blocked: boolean) => Promise<void>;
 }
 
-export function TopUsersTable({ rows, blockedUserIds, onToggleBlock }: TopUsersTableProps) {
+export function TopUsersTable({ rows, page, pageSize, totalRows, onPageChange, blockedUserIds, onToggleBlock }: TopUsersTableProps) {
   const [query, setQuery] = useState('');
   const [ascending, setAscending] = useState(false);
   const filteredRows = useMemo(() => rows.filter((row) => String(row.user_id ?? '').includes(query.trim())), [rows, query]);
@@ -19,7 +23,7 @@ export function TopUsersTable({ rows, blockedUserIds, onToggleBlock }: TopUsersT
   async function copyId(userId: string) { await navigator.clipboard?.writeText(userId); }
   return (
     <section className="rounded-2xl bg-white p-4 shadow-panel animate-rise">
-      <h3 className="mb-3 font-heading text-lg text-ink">Users</h3>
+      <div className="mb-3 flex items-center justify-start gap-3"><h3 className="font-heading text-lg text-ink">Users</h3><span className="rounded-full bg-accent/10 px-2.5 py-1 text-md font-semibold text-accent">{totalRows}</span></div>
       <input aria-label="Search users" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search user IDs" className="mb-3 w-full rounded-lg border border-ink/20 px-3 py-2 text-sm" />
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
@@ -43,6 +47,7 @@ export function TopUsersTable({ rows, blockedUserIds, onToggleBlock }: TopUsersT
           </tbody>
         </table>
       </div>
+      <div className="mt-3 flex items-center justify-between text-xs text-ink/70"><span>Page {page} of {Math.max(1, Math.ceil(totalRows / pageSize))}</span><div className="flex gap-2"><button type="button" onClick={() => onPageChange(page - 1)} disabled={page === 1} className="rounded-md border border-ink/20 px-2 py-1 disabled:opacity-40">Previous</button><button type="button" onClick={() => onPageChange(page + 1)} disabled={page >= Math.ceil(totalRows / pageSize)} className="rounded-md border border-ink/20 px-2 py-1 disabled:opacity-40">Next</button></div></div>
     </section>
   );
 }

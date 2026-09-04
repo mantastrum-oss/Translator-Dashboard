@@ -21,6 +21,7 @@ describe('apiGet', () => {
     const [, options] = fetchMock.mock.calls[0] as [RequestInfo | URL, RequestInit];
     const headers = options.headers as Record<string, string>;
     expect(headers['X-API-Key']).toBeDefined();
+    expect(options.cache).toBe('no-store');
   });
 
   it('includes the request URL in HTTP errors', async () => {

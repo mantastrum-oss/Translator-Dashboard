@@ -40,8 +40,15 @@ def errors(start: date | None = None, end: date | None = None, guild_id: str | N
 
 
 @router.get("/guilds", response_model=GuildsResponse)
-def guilds(start: date | None = None, end: date | None = None, db: Session = Depends(get_db)):
-    return MetricsService(db).dashboard_guilds(*_dates(start, end))
+def guilds(
+    start: date | None = None,
+    end: date | None = None,
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=50, ge=1, le=200),
+    db: Session = Depends(get_db),
+):
+    resolved_start, resolved_end = _dates(start, end)
+    return MetricsService(db).dashboard_guilds(resolved_start, resolved_end, page, page_size)
 
 
 @router.get("/users", response_model=PaginatedUsersResponse)

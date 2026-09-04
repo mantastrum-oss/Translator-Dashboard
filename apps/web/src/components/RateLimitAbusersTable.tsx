@@ -17,6 +17,7 @@ export function RateLimitAbusersTable({ rows }: RateLimitAbusersTableProps) {
               <th className="py-2">Rank</th>
               <th className="py-2">User ID</th>
               <th className="py-2">Blocked Attempts</th>
+              <th className="py-2">Attempted Characters</th>
               <th className="py-2">Guilds</th>
               <th className="py-2">First Seen</th>
               <th className="py-2">Last Seen</th>
@@ -25,13 +26,14 @@ export function RateLimitAbusersTable({ rows }: RateLimitAbusersTableProps) {
           </thead>
           <tbody>
             {rows.length === 0 ? (
-              <tr><td colSpan={7} className="py-4 text-center text-ink/50">No rate-limited attempts in this range</td></tr>
+              <tr><td colSpan={8} className="py-4 text-center text-ink/50">No rate-limited attempts in this range</td></tr>
             ) : (
               rows.map((row) => (
                 <tr key={row.user_id} className="border-b border-ink/5">
                   <td className="py-2">{row.rank}</td>
                   <td className="py-2"><span className="mr-2 font-mono">{row.user_id}</span></td>
                   <td className="py-2">{formatNumber(row.blocked_attempts)}</td>
+                  <td className="py-2">{formatNumber(row.attempted_characters)}</td>
                   <td className="py-2">{formatNumber(row.guild_count)}</td>
                   <td className="py-2">{new Date(row.first_blocked_at).toLocaleString()}</td>
                   <td className="py-2">{new Date(row.last_blocked_at).toLocaleString()}</td>

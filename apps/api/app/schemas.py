@@ -208,6 +208,9 @@ class GuildRow(BaseModel):
 class GuildsResponse(BaseModel):
     start: date
     end: date
+    page: int
+    page_size: int
+    total_rows: int
     rows: list[GuildRow]
 
 
@@ -215,6 +218,7 @@ class RateLimitAbuserRow(BaseModel):
     rank: int
     user_id: str
     blocked_attempts: int
+    attempted_characters: int
     guild_count: int
     first_blocked_at: datetime
     last_blocked_at: datetime

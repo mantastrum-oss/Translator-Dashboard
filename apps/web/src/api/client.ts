@@ -46,6 +46,7 @@ export async function apiGet<T>(path: string, params: Record<string, string | nu
   for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
       const response = await fetch(url, {
+        cache: 'no-store',
         headers: {
           'Content-Type': 'application/json',
           'X-API-Key': DASHBOARD_API_KEY

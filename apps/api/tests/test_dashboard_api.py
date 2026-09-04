@@ -39,7 +39,7 @@ def test_rate_limit_abusers_ranks_only_rate_limited_events(client, api_key):
             "channel_id": "c1",
             "user_id": "abuser",
             "target_lang": "de",
-            "char_count": 0,
+            "char_count": 120,
             "success": False,
             "error_code": "rate_limited",
         },
@@ -50,7 +50,7 @@ def test_rate_limit_abusers_ranks_only_rate_limited_events(client, api_key):
             "channel_id": "c2",
             "user_id": "abuser",
             "target_lang": "de",
-            "char_count": 0,
+            "char_count": 80,
             "success": False,
             "error_code": "rate_limited",
         },
@@ -80,6 +80,7 @@ def test_rate_limit_abusers_ranks_only_rate_limited_events(client, api_key):
     assert rows[0]["user_id"] == "abuser"
     assert rows[0]["rank"] == 1
     assert rows[0]["blocked_attempts"] == 2
+    assert rows[0]["attempted_characters"] == 200
     assert rows[0]["guild_count"] == 2
 
 

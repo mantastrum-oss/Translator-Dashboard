@@ -91,15 +91,17 @@ class MetricsService:
         stmt = select(error.label("error_code"), func.count(TranslationEvent.id).label("count")).where(*filters).group_by(error).order_by(func.count(TranslationEvent.id).desc())
         return DashboardErrorsResponse(start=start, end=end, rows=[ErrorRow(error_code=row.error_code, count=int(row.count or 0)) for row in self.db.execute(stmt)])
 
-    def dashboard_guilds(self, start: date, end: date) -> GuildsResponse:
+    def dashboard_guilds(self, start: date, end: date, page: int, page_size: int) -> GuildsResponse:
         filters = self._dashboard_filter(start, end, None) + [TranslationEvent.guild_id.is_not(None)]
         stmt = select(
             TranslationEvent.guild_id, func.count(TranslationEvent.id).label("translations"),
             func.sum(case((TranslationEvent.success.is_(True), 1), else_=0)).label("successful"),
             func.sum(case((TranslationEvent.success.is_(True), TranslationEvent.char_count), else_=0)).label("characters"),
         ).where(*filters).group_by(TranslationEvent.guild_id).order_by(func.count(TranslationEvent.id).desc())
-        rows = [GuildRow(guild_id=str(row.guild_id), translations=int(row.translations or 0), successful=int(row.successful or 0), characters=int(row.characters or 0)) for row in self.db.execute(stmt)]
-        return GuildsResponse(start=start, end=end, rows=rows)
+        total_rows = int(self.db.execute(select(func.count()).select_from(stmt.with_only_columns(TranslationEvent.guild_id).order_by(None).subquery())).scalar_one())
+        rows_stmt = stmt.offset((page - 1) * page_size).limit(page_size)
+        rows = [GuildRow(guild_id=str(row.guild_id), translations=int(row.translations or 0), successful=int(row.successful or 0), characters=int(row.characters or 0)) for row in self.db.execute(rows_stmt)]
+        return GuildsResponse(start=start, end=end, page=page, page_size=page_size, total_rows=total_rows, rows=rows)
 
     def dashboard_rate_limit_abusers(self, start: date, end: date, limit: int) -> RateLimitAbusersResponse:
         filters = self._dashboard_filter(start, end, None) + [TranslationEvent.error_code == "rate_limited"]
@@ -107,6 +109,7 @@ class MetricsService:
             select(
                 TranslationEvent.user_id,
                 func.count(TranslationEvent.id).label("blocked_attempts"),
+                func.sum(TranslationEvent.char_count).label("attempted_characters"),
                 func.count(func.distinct(TranslationEvent.guild_id)).filter(TranslationEvent.guild_id.is_not(None)).label("guild_count"),
                 func.min(TranslationEvent.created_at_utc).label("first_blocked_at"),
                 func.max(TranslationEvent.created_at_utc).label("last_blocked_at"),
@@ -121,6 +124,7 @@ class MetricsService:
                 rank=index + 1,
                 user_id=row.user_id,
                 blocked_attempts=int(row.blocked_attempts or 0),
+                attempted_characters=int(row.attempted_characters or 0),
                 guild_count=int(row.guild_count or 0),
                 first_blocked_at=row.first_blocked_at,
                 last_blocked_at=row.last_blocked_at,

@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import App from '../App';
 
@@ -16,7 +17,7 @@ function mockResponse(url: string) {
     return { month: '2026-08', timezone: 'UTC', page: 1, page_size: 10, total_rows: 1, rows: [{ user_id: '123456789012345678', translated_characters: 1000, successful_events: 8, failed_events: 1 }] };
   }
   if (url.includes('/guilds')) {
-    return { month: '2026-08', timezone: 'UTC', page: 1, page_size: 10, total_rows: 1, rows: [{ guild_id: 'g1', translated_characters: 1000, successful_events: 8, failed_events: 1 }] };
+    return { start: '2026-08-01', end: '2026-08-31', page: 1, page_size: 10, total_rows: 21, rows: [{ guild_id: 'g1', translations: 8, successful: 8, characters: 1000 }] };
   }
   if (url.includes('/errors')) {
     return { start: '2026-08-01', end: '2026-08-31', rows: [{ error_code: 'RATE_LIMIT', count: 2 }] };
@@ -46,7 +47,39 @@ describe('DashboardPage', () => {
 
     expect(screen.getByText(/^Users$/i)).toBeInTheDocument();
     expect(screen.getByText(/^Servers$/i)).toBeInTheDocument();
+    expect(screen.getAllByText('1')).toHaveLength(2);
+    expect(screen.getAllByRole('button', { name: 'Next' })).toHaveLength(2);
     expect(screen.getByText(/Characters Translated/i)).toBeInTheDocument();
     expect(screen.queryByText(/Error Distribution/i)).not.toBeInTheDocument();
+  });
+
+  it('shows refresh progress until all metrics requests complete', async () => {
+    const user = userEvent.setup();
+    let fetchCount = 0;
+    let releaseRefresh!: () => void;
+    const refreshPending = new Promise<void>((resolve) => { releaseRefresh = resolve; });
+
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input: RequestInfo | URL) => {
+      fetchCount += 1;
+      const response = () => new Response(JSON.stringify(mockResponse(String(input))), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (fetchCount > 6) return refreshPending.then(response);
+      return Promise.resolve(response());
+    });
+
+    render(<App />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Refresh Now' })).toBeEnabled());
+
+    await user.click(screen.getByRole('button', { name: 'Refresh Now' }));
+
+    expect(screen.getByRole('button', { name: /Refreshing/i })).toBeDisabled();
+    expect(screen.getByRole('status', { name: 'Refreshing' })).toBeInTheDocument();
+
+    releaseRefresh();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Refresh Now' })).toBeEnabled());
+    expect(screen.queryByRole('status', { name: 'Refreshing' })).not.toBeInTheDocument();
   });
 });

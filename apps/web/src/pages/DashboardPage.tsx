@@ -19,12 +19,14 @@ export function DashboardPage() {
   const [blockedUsers, setBlockedUsers] = useState<BlockedUserRow[]>([]);
   const [blockedLoading, setBlockedLoading] = useState(true);
   const [blockedError, setBlockedError] = useState<string | null>(null);
+  const [usersPage, setUsersPage] = useState(1);
+  const [serversPage, setServersPage] = useState(1);
 
   const { overview, users, servers, rateLimitAbusers, topAbusers, loading, error, refresh } = useMetrics(
     month,
     'UTC',
-    1,
-    1,
+    usersPage,
+    serversPage,
     10
   );
 
@@ -52,18 +54,28 @@ export function DashboardPage() {
     await loadBlockedUsers();
   }
 
+  function changeMonth(nextMonth: string) {
+    setMonth(nextMonth);
+    setUsersPage(1);
+    setServersPage(1);
+  }
+
   return (
     <main className="min-h-screen bg-surf font-body text-ink">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <header className="mb-6 border-b border-ink/10 pb-6">
           <div className="flex flex-wrap items-center justify-between gap-4"><h1 className="font-heading text-3xl sm:text-4xl">Translator Analytics</h1><BotStatus /></div>
           <div className="mt-5 flex flex-wrap items-end gap-3">
-            <MonthPicker month={month} onChange={setMonth} />
+            <MonthPicker month={month} onChange={changeMonth} />
             <button
-              className="rounded-lg bg-accent px-4 py-2 text-white transition hover:bg-accent/90"
+              type="button"
+              className="inline-flex min-w-32 items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2 text-white transition hover:bg-accent/90 disabled:cursor-wait disabled:opacity-70"
               onClick={() => refresh()}
+              disabled={loading}
+              aria-busy={loading}
             >
-              Refresh Now
+              {loading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" role="status" aria-label="Refreshing" />}
+              <span>{loading ? 'Refreshing...' : 'Refresh Now'}</span>
             </button>
             <ConsolePanel />
           </div>
@@ -82,8 +94,8 @@ export function DashboardPage() {
             </section>
 
             <section className="mt-6 grid gap-4 lg:grid-cols-2">
-              <TopUsersTable rows={users?.rows ?? []} blockedUserIds={new Set(blockedUsers.map((row) => row.user_id))} onToggleBlock={toggleUserBlock} />
-              <TopServersTable rows={servers?.rows ?? []} />
+              <TopUsersTable rows={users?.rows ?? []} page={users?.page ?? usersPage} pageSize={users?.page_size ?? 10} totalRows={users?.total_rows ?? 0} onPageChange={setUsersPage} blockedUserIds={new Set(blockedUsers.map((row) => row.user_id))} onToggleBlock={toggleUserBlock} />
+              <TopServersTable rows={servers?.rows ?? []} page={servers?.page ?? serversPage} pageSize={servers?.page_size ?? 10} totalRows={servers?.total_rows ?? 0} onPageChange={setServersPage} />
             </section>
 
             <section className="mt-6">
