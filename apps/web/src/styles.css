@@ -3,7 +3,27 @@
 @tailwind utilities;
 
 :root {
+  --color-ink: 18 38 58;
+  --color-surf: 242 245 249;
   color: #12263a;
+  color-scheme: light;
+}
+
+.dark {
+  --color-ink: 226 232 240;
+  --color-surf: 15 23 42;
+  color-scheme: dark;
+}
+
+.dark .bg-white {
+  background-color: rgb(30 41 59);
+}
+
+/* form controls don't inherit text color automatically */
+input,
+select,
+textarea {
+  color: rgb(var(--color-ink));
 }
 
 * {

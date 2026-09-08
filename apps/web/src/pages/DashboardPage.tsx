@@ -8,6 +8,7 @@ import { RateLimitAbusersTable } from '../components/RateLimitAbusersTable';
 import { TopAbusersTable } from '../components/TopAbusersTable';
 import { BlockedUsersPanel } from '../components/BlockedUsersPanel';
 import { BotStatus } from '../components/BotStatus';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { useMetrics } from '../hooks/useMetrics';
 import { apiDelete, apiGet, apiPost } from '../api/client';
 import type { BlockedUserRow, BlockedUsersResponse } from '../types/metrics';
@@ -63,7 +64,7 @@ export function DashboardPage() {
     <main className="min-h-screen bg-surf font-body text-ink">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <header className="mb-6 border-b border-ink/10 pb-6">
-          <div className="flex flex-wrap items-center justify-between gap-4"><h1 className="font-heading text-3xl sm:text-4xl">Translator Analytics</h1><BotStatus /></div>
+          <div className="flex flex-wrap items-center justify-between gap-4"><h1 className="font-heading text-3xl sm:text-4xl">Translator Analytics</h1><div className="flex items-center gap-3"><BotStatus /><ThemeToggle /></div></div>
           <div className="mt-5 flex flex-wrap items-end gap-3">
             <MonthPicker month={month} onChange={changeMonth} />
             <button

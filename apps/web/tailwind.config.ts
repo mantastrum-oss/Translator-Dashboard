@@ -2,11 +2,12 @@ import type { Config } from 'tailwindcss';
 
 const config: Config = {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        ink: '#12263A',
-        surf: '#F2F5F9',
+        ink: 'rgb(var(--color-ink) / <alpha-value>)',
+        surf: 'rgb(var(--color-surf) / <alpha-value>)',
         accent: '#1E847F',
         coral: '#DA5A5A',
         amber: '#D49A1A'
