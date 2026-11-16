@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     session_ttl_hours: int = 168
     # Must match the bot's USER_MONTHLY_CHARACTER_LIMIT.
     free_monthly_chars: int = 15000
+    # The bot token, only to look up usernames and avatars (GET /users/{id}). Optional.
+    discord_token: str = ""
     api_key: str = ""
     app_env: str = "development"
     api_port: int = 8000

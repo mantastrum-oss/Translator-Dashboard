@@ -11,6 +11,7 @@ from app.routes.dashboard import router as dashboard_router
 from app.routes.blocks import router as blocks_router
 from app.routes.bot import router as bot_router
 from app.routes.auth import router as auth_router
+from app.routes.discord import router as discord_router
 
 settings = get_settings()
 
@@ -35,4 +36,5 @@ app.include_router(events_router, dependencies=[Depends(require_analytics_api_ke
 app.include_router(metrics_router, dependencies=[Depends(require_dashboard_auth)])
 app.include_router(dashboard_router, dependencies=[Depends(require_dashboard_auth)])
 app.include_router(blocks_router, dependencies=[Depends(require_dashboard_auth)])
+app.include_router(discord_router, dependencies=[Depends(require_dashboard_auth)])
 app.include_router(bot_router)

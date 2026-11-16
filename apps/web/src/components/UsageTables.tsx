@@ -1,6 +1,6 @@
 import type { ServerRow, UserRow } from '../types/metrics';
 import { formatNumber } from '../lib/format';
-import { IdCell } from './IdCell';
+import { IdCell, UserCell } from './IdCell';
 import { Pager, Panel, Table, td, tdNum, th, thNum } from './Panel';
 import { RowMenu } from './RowMenu';
 import { SearchInput } from './SearchInput';
@@ -33,7 +33,7 @@ export function UsersTable({
         empty={rows.length === 0 ? (query ? `No user ID contains “${query}”.` : 'No users this month.') : undefined}
         head={
           <>
-            <th className={th}>User ID</th>
+            <th className={th}>User</th>
             <th className={thNum} aria-sort="descending">
               Chars ↓
             </th>
@@ -45,7 +45,7 @@ export function UsersTable({
         {rows.map((row) => (
           <tr key={row.user_id} className="border-b border-ink/5">
             <td className={td}>
-              <IdCell id={row.user_id} blocked={blockedIds.has(row.user_id)} />
+              <UserCell id={row.user_id} blocked={blockedIds.has(row.user_id)} />
             </td>
             <td className={tdNum}>{formatNumber(row.translated_characters)}</td>
             <td className={tdNum}>{formatNumber(row.failed_events)}</td>
