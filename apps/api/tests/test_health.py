@@ -11,9 +11,9 @@ def test_cors_preflight_allows_dashboard_origin(client):
         headers={
             "Origin": "http://localhost:5173",
             "Access-Control-Request-Method": "GET",
-            "Access-Control-Request-Headers": "x-api-key",
+            "Access-Control-Request-Headers": "authorization",
         },
     )
     assert response.status_code == 200
     assert response.headers["access-control-allow-origin"] == "http://localhost:5173"
-    assert "x-api-key" in response.headers["access-control-allow-headers"]
+    assert "authorization" in response.headers["access-control-allow-headers"]

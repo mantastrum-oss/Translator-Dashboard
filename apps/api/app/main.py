@@ -10,6 +10,7 @@ from app.routes.metrics import router as metrics_router
 from app.routes.dashboard import router as dashboard_router
 from app.routes.blocks import router as blocks_router
 from app.routes.bot import router as bot_router
+from app.routes.auth import router as auth_router
 
 settings = get_settings()
 
@@ -29,6 +30,7 @@ app.add_middleware(
 )
 
 app.include_router(health_router)
+app.include_router(auth_router)
 app.include_router(events_router, dependencies=[Depends(require_analytics_api_key), Depends(enforce_analytics_rate_limit)])
 app.include_router(metrics_router, dependencies=[Depends(require_dashboard_auth)])
 app.include_router(dashboard_router, dependencies=[Depends(require_dashboard_auth)])

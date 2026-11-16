@@ -12,11 +12,13 @@ os.environ.setdefault(
 os.environ.setdefault("API_KEY", "test-key")
 # override so real Supabase keys in the repo .env can't leak into test auth
 os.environ["ANALYTICS_API_KEY"] = "test-key"
-os.environ["DASHBOARD_API_KEY"] = "test-key"
+os.environ["DASHBOARD_PASSWORD"] = "test-password"
+os.environ["SESSION_SECRET"] = "test-session-secret"
 os.environ.setdefault("CORS_ORIGINS", "http://localhost:5173")
 
 from app.db import Base, engine  # noqa: E402
 from app.main import app  # noqa: E402
+from app.auth import issue_session_token  # noqa: E402
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -39,7 +41,10 @@ def client() -> TestClient:
 
 @pytest.fixture
 def api_key() -> dict[str, str]:
-    return {"X-API-Key": os.environ["API_KEY"]}
+    """The bot's analytics key plus a dashboard session, so a test can both
+    ingest events and read them back."""
+    token, _ = issue_session_token()
+    return {"X-API-Key": os.environ["API_KEY"], "Authorization": f"Bearer {token}"}
 
 
 @pytest.fixture

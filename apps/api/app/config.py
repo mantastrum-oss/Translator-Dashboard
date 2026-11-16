@@ -12,7 +12,9 @@ class Settings(BaseSettings):
     supabase_url: str = ""
     supabase_service_role_key: str = ""
     analytics_api_key: str = ""
-    dashboard_api_key: str = ""
+    dashboard_password: str = ""
+    session_secret: str = ""
+    session_ttl_hours: int = 168
     api_key: str = ""
     app_env: str = "development"
     api_port: int = 8000

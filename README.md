@@ -5,8 +5,8 @@ Production-style analytics stack for a Discord Translator bot.
 ## Privacy And Security
 
 - Message text is never ingested or stored.
-- API key authentication is required for all `/v1/*` endpoints.
-- API key is provided in `X-API-Key`.
+- The bot authenticates with `ANALYTICS_API_KEY` in `X-API-Key` (event ingest and heartbeat only).
+- The dashboard logs in with `DASHBOARD_PASSWORD` and sends a signed session token as `Authorization: Bearer …`. No key is shipped to the browser.
 - Secrets are environment-driven.
 
 ## Architecture
@@ -50,8 +50,8 @@ Required root vars:
 - `POSTGRES_PORT`
 - `APP_ENV` (`development` or `production`)
 - `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` for the selected environment
-- `ANALYTICS_API_KEY`
-- `DASHBOARD_API_KEY`
+- `ANALYTICS_API_KEY` (the bot sends events and heartbeats with it; never used by the browser)
+- `DASHBOARD_PASSWORD` and `SESSION_SECRET` (dashboard login: the API checks the password and returns a signed session token valid for `SESSION_TTL_HOURS`, default 168)
 - `API_PORT`
 - `WEB_PORT`
 
@@ -87,9 +87,15 @@ Open:
 
 - `GET /health`
 
-Protected (`X-API-Key` required):
+- `POST /api/auth/login` with `{"password":"..."}` → `{"token":"...","expires_at":...}` (10 attempts per minute)
+
+Bot (`X-API-Key: ANALYTICS_API_KEY`):
 
 - `POST /v1/events/translation`
+- `POST /api/bot/heartbeat`
+
+Dashboard (`Authorization: Bearer <token>`):
+
 - `GET /api/dashboard/summary?start=YYYY-MM-DD&end=YYYY-MM-DD`
 - `GET /api/dashboard/timeseries?start=YYYY-MM-DD&end=YYYY-MM-DD&guild_id=...`
 - `GET /api/dashboard/languages?start=YYYY-MM-DD&end=YYYY-MM-DD&guild_id=...`
@@ -180,7 +186,7 @@ npm test
 
 ### 401 Unauthorized
 
-- Confirm `X-API-Key` header is present.
+- Bot requests: confirm the `X-API-Key` header matches `ANALYTICS_API_KEY`. Dashboard: log in again (sessions expire after `SESSION_TTL_HOURS`).
 - Confirm it matches root `.env` value for `API_KEY`.
 
 ### CORS Errors
