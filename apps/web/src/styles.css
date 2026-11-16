@@ -5,6 +5,7 @@
 :root {
   --color-ink: 18 38 58;
   --color-surf: 242 245 249;
+  --color-coral: 184 62 62;
   color: #12263a;
   color-scheme: light;
 }
@@ -12,6 +13,7 @@
 .dark {
   --color-ink: 226 232 240;
   --color-surf: 15 23 42;
+  --color-coral: 240 128 128;
   color-scheme: dark;
 }
 

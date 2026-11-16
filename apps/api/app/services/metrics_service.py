@@ -91,8 +91,10 @@ class MetricsService:
         stmt = select(error.label("error_code"), func.count(TranslationEvent.id).label("count")).where(*filters).group_by(error).order_by(func.count(TranslationEvent.id).desc())
         return DashboardErrorsResponse(start=start, end=end, rows=[ErrorRow(error_code=row.error_code, count=int(row.count or 0)) for row in self.db.execute(stmt)])
 
-    def dashboard_guilds(self, start: date, end: date, page: int, page_size: int) -> GuildsResponse:
+    def dashboard_guilds(self, start: date, end: date, page: int, page_size: int, q: str | None = None) -> GuildsResponse:
         filters = self._dashboard_filter(start, end, None) + [TranslationEvent.guild_id.is_not(None)]
+        if q:
+            filters.append(TranslationEvent.guild_id.contains(q, autoescape=True))
         stmt = select(
             TranslationEvent.guild_id, func.count(TranslationEvent.id).label("translations"),
             func.sum(case((TranslationEvent.success.is_(True), 1), else_=0)).label("successful"),
@@ -164,8 +166,10 @@ class MetricsService:
             )
         return TopAbusersResponse(start=start, end=end, rows=rows)
 
-    def dashboard_users(self, start: date, end: date, page: int, page_size: int) -> PaginatedUsersResponse:
+    def dashboard_users(self, start: date, end: date, page: int, page_size: int, q: str | None = None) -> PaginatedUsersResponse:
         filters = self._dashboard_filter(start, end, None)
+        if q:
+            filters.append(TranslationEvent.user_id.contains(q, autoescape=True))
         base = (
             select(
                 TranslationEvent.user_id.label("user_id"),
