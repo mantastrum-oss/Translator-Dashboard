@@ -65,6 +65,7 @@ def test_revenue_counts_only_packs_that_were_not_refunded():
     assert result.available is True
     assert result.packs_sold == 2
     assert result.revenue_cents == 800
+    assert result.buyers == 2  # c refunded
     assert result.currency == "eur"
     assert ("gte", "purchased_at", "2026-11-01T00:00:00+00:00") in client.queries["user_packs"].filters
     assert ("lt", "purchased_at", "2026-12-01T00:00:00+00:00") in client.queries["user_packs"].filters
@@ -82,6 +83,7 @@ def test_free_limit_counts_only_free_characters():
     result = billing_for_month(client, "2026-11", 15000)
     assert result.users_reached_free_limit == 2
     assert result.users_reached_and_bought == 1
+    assert result.buyers == 1
     assert ("eq", "month", "2026-11") in client.queries["user_monthly_usage"].filters
 
 

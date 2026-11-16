@@ -178,7 +178,10 @@ export function DashboardPage() {
           <div className="lg:col-span-2">
             <TrendChart rows={data.month?.timeseries.rows ?? null} />
           </div>
-          <FreeLimitCard billing={billing} />
+          {/* Only as tall as its content, not the chart beside it. */}
+          <div className="self-start">
+            <FreeLimitCard billing={billing} />
+          </div>
         </section>
 
         <section className="mt-6 grid gap-4 lg:grid-cols-2">

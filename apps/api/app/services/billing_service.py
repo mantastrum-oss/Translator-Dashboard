@@ -33,7 +33,7 @@ def _all_rows(query: Any) -> list[dict]:
 def billing_for_month(client: _SupabaseLike | None, month: str, free_monthly_chars: int) -> BillingResponse:
     empty = BillingResponse(
         month=month, available=False, free_monthly_chars=free_monthly_chars, packs_sold=0,
-        revenue_cents=0, currency="eur", users_reached_free_limit=0, users_reached_and_bought=0,
+        revenue_cents=0, currency="eur", users_reached_free_limit=0, users_reached_and_bought=0, buyers=0,
     )
     if client is None:
         return empty
@@ -72,4 +72,5 @@ def billing_for_month(client: _SupabaseLike | None, month: str, free_monthly_cha
         currency=currencies.pop() if len(currencies) == 1 else "eur",
         users_reached_free_limit=len(reached),
         users_reached_and_bought=len(reached & buyers),
+        buyers=len(buyers),
     )

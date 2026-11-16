@@ -43,7 +43,7 @@ function mockResponse(url: string, init?: RequestInit) {
   if (url.includes('/billing')) {
     return {
       month: '2026-08', available: true, free_monthly_chars: 15000, packs_sold: 5, revenue_cents: 2300,
-      currency: 'eur', users_reached_free_limit: 12, users_reached_and_bought: 4
+      currency: 'eur', users_reached_free_limit: 12, users_reached_and_bought: 4, buyers: 5
     };
   }
   if (url.includes('/dashboard/users')) {
@@ -91,6 +91,9 @@ describe('DashboardPage', () => {
     expect(kpis.getByText('5 packs')).toBeInTheDocument();
     expect(await screen.findByText('37,256')).toBeInTheDocument();
     expect(screen.getByText('12 users')).toBeInTheDocument();
+    expect(screen.getByText('of them bought a pack')).toBeInTheDocument();
+    expect(screen.getByText('(33.3%)')).toBeInTheDocument();
+    expect(screen.getByText('5 users')).toBeInTheDocument();
   });
 
   it('shows dashes and Retry instead of zeros when loading fails', async () => {
