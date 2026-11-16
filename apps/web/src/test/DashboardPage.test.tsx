@@ -18,6 +18,7 @@ function rateLimitedRows(count: number) {
 }
 
 let blockedRows: { user_id: string; blocked_at: string }[] = [];
+let discordAvailable = false;
 
 function mockResponse(url: string, init?: RequestInit) {
   if (url.includes('/api/blocks/users')) {
@@ -54,6 +55,13 @@ function mockResponse(url: string, init?: RequestInit) {
   if (url.includes('/timeseries')) return { start: '2026-08-01', end: '2026-08-31', rows: [] };
   if (url.includes('/rate-limit-abusers')) return { start: '2026-08-01', end: '2026-08-31', rows: rateLimitedRows(20) };
   if (url.includes('/top-abusers')) return { start: '2026-08-01', end: '2026-08-31', rows: [] };
+  if (url.includes('/api/discord/users')) {
+    if (!discordAvailable) return { available: false, users: {} };
+    return {
+      available: true,
+      users: { [USER]: { id: USER, username: 'alice', display_name: 'Alice', avatar_url: 'https://cdn.discordapp.com/embed/avatars/1.png' } }
+    };
+  }
   if (url.includes('/bot/status')) return { status: 'ok', online: true, guild_count: 1, last_heartbeat_utc: null };
   return {};
 }
@@ -67,6 +75,7 @@ function mockApi() {
 describe('DashboardPage', () => {
   beforeEach(() => {
     blockedRows = [];
+    discordAvailable = false;
   });
   afterEach(() => vi.restoreAllMocks());
 
@@ -138,5 +147,21 @@ describe('DashboardPage', () => {
     fireEvent.change(input, { target: { value: '2026-09' } });
     expect(input.value).toBe('2026-09');
     await screen.findByText('37,256');
+  });
+
+  it('shows usernames and avatars when the API has them', async () => {
+    const user = userEvent.setup();
+    discordAvailable = true;
+    const fetchMock = mockApi();
+    render(<App />);
+
+    expect(await screen.findByText('Alice')).toBeInTheDocument();
+    expect(screen.getByText(USER)).toBeInTheDocument();
+    const lookup = fetchMock.mock.calls.map(([url]) => String(url)).find((url) => url.includes('/api/discord/users'));
+    expect(lookup).toContain(USER);
+
+    await user.click(screen.getAllByRole('button', { name: `Actions for ${USER}` })[0]);
+    await user.click(screen.getByRole('menuitem', { name: 'Block user' }));
+    expect(await screen.findByText('Alice blocked.')).toBeInTheDocument();
   });
 });

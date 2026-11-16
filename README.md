@@ -52,6 +52,7 @@ Required root vars:
 - `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` for the selected environment
 - `ANALYTICS_API_KEY` (the bot sends events and heartbeats with it; never used by the browser)
 - `DASHBOARD_PASSWORD` and `SESSION_SECRET` (dashboard login: the API checks the password and returns a signed session token valid for `SESSION_TTL_HOURS`, default 168)
+- `DISCORD_TOKEN` (optional): the bot token, used only for `GET /users/{id}` so the dashboard can show usernames and avatars. Results stay in API memory for up to 24 hours and are never stored (Translator privacy notice §1, §4). Without it the dashboard shows IDs only.
 - `API_PORT`
 - `WEB_PORT`
 

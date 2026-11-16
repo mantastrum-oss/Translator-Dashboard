@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import type { RateLimitAbuserRow, TopAbuserRow } from '../types/metrics';
 import { formatNumber, formatPercent, formatUtcShort } from '../lib/format';
-import { IdCell } from './IdCell';
+import { UserCell } from './IdCell';
 import { Panel, ShowAllButton, Table, td, tdNum, th, thNum } from './Panel';
 import { RowMenu } from './RowMenu';
 
@@ -24,7 +24,7 @@ export function RateLimitedTable({ rows, blockedIds, onToggleBlock }: Moderation
         empty={rows.length === 0 ? 'No rate-limited requests this month.' : undefined}
         head={
           <>
-            <th className={th}>User ID</th>
+            <th className={th}>User</th>
             <th className={thNum} aria-sort="descending">
               Hits ↓
             </th>
@@ -37,7 +37,7 @@ export function RateLimitedTable({ rows, blockedIds, onToggleBlock }: Moderation
         {shown.map((row) => (
           <tr key={row.user_id} className="border-b border-ink/5">
             <td className={td}>
-              <IdCell id={row.user_id} blocked={blockedIds.has(row.user_id)} />
+              <UserCell id={row.user_id} blocked={blockedIds.has(row.user_id)} />
             </td>
             <td className={tdNum}>{formatNumber(row.blocked_attempts)}</td>
             <td className={tdNum}>{formatNumber(row.attempted_characters)}</td>
@@ -62,7 +62,7 @@ export function TopRequestersTable({ rows, blockedIds, onToggleBlock }: Moderati
         empty={rows.length === 0 ? 'No requests this month.' : undefined}
         head={
           <>
-            <th className={th}>User ID</th>
+            <th className={th}>User</th>
             <th className={thNum} aria-sort="descending">
               Requests ↓
             </th>
@@ -74,7 +74,7 @@ export function TopRequestersTable({ rows, blockedIds, onToggleBlock }: Moderati
         {shown.map((row) => (
           <tr key={row.user_id} className="border-b border-ink/5">
             <td className={td}>
-              <IdCell id={row.user_id} blocked={blockedIds.has(row.user_id)} />
+              <UserCell id={row.user_id} blocked={blockedIds.has(row.user_id)} />
             </td>
             <td className={tdNum}>{formatNumber(row.request_count)}</td>
             <td className={tdNum}>{formatPercent(row.success_rate)}</td>

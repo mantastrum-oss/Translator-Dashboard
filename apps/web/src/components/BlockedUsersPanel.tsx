@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 
 import type { BlockedUserRow } from '../types/metrics';
 import { formatUtcShort } from '../lib/format';
-import { IdCell } from './IdCell';
+import { UserCell } from './IdCell';
 import { Panel, Table, td, th, thNum } from './Panel';
 
 const userIdPattern = /^\d{17,20}$/;
@@ -96,7 +96,7 @@ export function BlockedUsersPanel({ rows, total, loading, error, onBlock, onUnbl
         <Table
           head={
             <>
-              <th className={th}>User ID</th>
+              <th className={th}>User</th>
               <th className={thNum}>Blocked (UTC)</th>
               <th className="w-24" aria-label="Actions" />
             </>
@@ -105,7 +105,7 @@ export function BlockedUsersPanel({ rows, total, loading, error, onBlock, onUnbl
           {rows.map((row) => (
             <tr key={row.user_id} className="border-b border-ink/5">
               <td className={td}>
-                <IdCell id={row.user_id} />
+                <UserCell id={row.user_id} />
               </td>
               <td className="py-1.5 pl-4 text-right tabular-nums">{formatUtcShort(row.blocked_at)}</td>
               <td className="py-1.5 text-right">

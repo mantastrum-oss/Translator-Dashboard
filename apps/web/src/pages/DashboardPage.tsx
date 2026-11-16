@@ -12,6 +12,7 @@ import { Toast, type ToastMessage } from '../components/Toast';
 import { TrendChart } from '../components/TrendChart';
 import { ServersTable, UsersTable } from '../components/UsageTables';
 import { useDashboardData } from '../hooks/useMetrics';
+import { DiscordUsersContext, useDiscordUsers } from '../hooks/useDiscordUsers';
 import { apiDelete, apiGet, apiPost, logout } from '../api/client';
 import type { BlockedUserRow, BlockedUsersResponse } from '../types/metrics';
 import { currentMonthUTC, formatMoney, formatNumber, formatPercent, formatUtcTime, shortId } from '../lib/format';
@@ -57,6 +58,15 @@ export function DashboardPage() {
 
   const blockedIds = useMemo(() => new Set(blocked.map((row) => row.user_id)), [blocked]);
 
+  // Every user ID on the page, for usernames and avatars.
+  const visibleUserIds = [
+    ...(data.users?.rows ?? []).map((row) => row.user_id),
+    ...(data.month?.rateLimited.rows ?? []).map((row) => row.user_id),
+    ...(data.month?.topRequesters.rows ?? []).map((row) => row.user_id),
+    ...blocked.map((row) => row.user_id)
+  ];
+  const discordUsers = useDiscordUsers(visibleUserIds);
+
   const showToast = useCallback((text: string, undo?: () => void) => {
     toastId.current += 1;
     setToast({ id: toastId.current, text, undo });
@@ -71,8 +81,9 @@ export function DashboardPage() {
         if (block) await apiPost('/api/blocks/users', { user_id: userId });
         else await apiDelete(`/api/blocks/users/${userId}`);
         await loadBlocked();
+        const name = discordUsers.get(userId)?.display_name ?? `User ${shortId(userId)}`;
         showToast(
-          `User ${shortId(userId)} ${block ? 'blocked' : 'unblocked'}.`,
+          `${name} ${block ? 'blocked' : 'unblocked'}.`,
           withUndo ? () => void setBlock(userId, !block, false) : undefined
         );
       } catch (error) {
@@ -82,7 +93,7 @@ export function DashboardPage() {
         pending.current.delete(userId);
       }
     },
-    [loadBlocked, showToast]
+    [loadBlocked, showToast, discordUsers]
   );
 
   const toggleBlock = useCallback((userId: string, block: boolean) => {
@@ -107,6 +118,7 @@ export function DashboardPage() {
   const refreshing = data.loading;
 
   return (
+    <DiscordUsersContext.Provider value={discordUsers}>
     <main className="min-h-screen bg-surf font-body text-ink">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <header className="mb-6 flex flex-col gap-4 border-b border-ink/10 pb-6">
@@ -215,5 +227,6 @@ export function DashboardPage() {
       </div>
       <Toast toast={toast} onClose={closeToast} />
     </main>
+    </DiscordUsersContext.Provider>
   );
 }
