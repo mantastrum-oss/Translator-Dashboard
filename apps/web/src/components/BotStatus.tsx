@@ -12,12 +12,20 @@ interface BotStatusResponse {
 export function BotStatus() {
   const [online, setOnline] = useState<boolean | null>(null);
 
+  // Checked every minute, so a bot that stops shows up without a reload.
   useEffect(() => {
     let active = true;
-    apiGet<BotStatusResponse>('/api/bot/status', {})
-      .then((response) => { if (active) setOnline(response.online); })
-      .catch(() => { if (active) setOnline(false); });
-    return () => { active = false; };
+    function check() {
+      apiGet<BotStatusResponse>('/api/bot/status', {})
+        .then((response) => { if (active) setOnline(response.online); })
+        .catch(() => { if (active) setOnline(false); });
+    }
+    check();
+    const timer = window.setInterval(check, 60_000);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
   }, []);
 
   const label = online === null ? 'Checking bot' : online ? 'Bot is running' : 'Bot unavailable';

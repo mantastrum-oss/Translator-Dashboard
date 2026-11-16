@@ -4,8 +4,11 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.schemas import DashboardErrorsResponse, DashboardSummaryResponse, GuildsResponse, PaginatedUsersResponse, RateLimitAbusersResponse, SourcesResponse, TimeseriesResponse, TopAbusersResponse
+from app.config import get_settings
+from app.schemas import BillingResponse, MonthParam, DashboardErrorsResponse, DashboardSummaryResponse, GuildsResponse, PaginatedUsersResponse, RateLimitAbusersResponse, SourcesResponse, TimeseriesResponse, TopAbusersResponse
+from app.services.billing_service import billing_for_month
 from app.services.metrics_service import MetricsService
+from app.supabase_client import get_supabase_admin_client
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
@@ -45,10 +48,11 @@ def guilds(
     end: date | None = None,
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=50, ge=1, le=200),
+    q: str | None = Query(default=None, max_length=32, description="Part of a server ID; searches every server, not one page"),
     db: Session = Depends(get_db),
 ):
     resolved_start, resolved_end = _dates(start, end)
-    return MetricsService(db).dashboard_guilds(resolved_start, resolved_end, page, page_size)
+    return MetricsService(db).dashboard_guilds(resolved_start, resolved_end, page, page_size, (q or "").strip() or None)
 
 
 @router.get("/users", response_model=PaginatedUsersResponse)
@@ -57,10 +61,11 @@ def users(
     end: date | None = None,
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=50, ge=1, le=200),
+    q: str | None = Query(default=None, max_length=32, description="Part of a user ID; searches every user, not one page"),
     db: Session = Depends(get_db),
 ):
     resolved_start, resolved_end = _dates(start, end)
-    return MetricsService(db).dashboard_users(resolved_start, resolved_end, page, page_size)
+    return MetricsService(db).dashboard_users(resolved_start, resolved_end, page, page_size, (q or "").strip() or None)
 
 
 @router.get("/rate-limit-abusers", response_model=RateLimitAbusersResponse)
@@ -83,3 +88,9 @@ def top_abusers(
 ):
     resolved_start, resolved_end = _dates(start, end)
     return MetricsService(db).dashboard_top_abusers(resolved_start, resolved_end, limit)
+
+
+@router.get("/billing", response_model=BillingResponse)
+def billing(month: MonthParam) -> BillingResponse:
+    """Packs sold (revenue) and users who used up the free allowance, for one UTC month."""
+    return billing_for_month(get_supabase_admin_client(), month, get_settings().free_monthly_chars)

@@ -256,3 +256,20 @@ class MetricsQuery(BaseModel):
 
         ZoneInfo(value)
         return value
+
+
+class BillingResponse(BaseModel):
+    """Character packs (Stripe) and the free monthly allowance for one month.
+
+    `available` is False when the API has no Supabase connection (local
+    Postgres mode); every count is then 0.
+    """
+
+    month: str
+    available: bool
+    free_monthly_chars: int
+    packs_sold: int
+    revenue_cents: int
+    currency: str
+    users_reached_free_limit: int
+    users_reached_and_bought: int

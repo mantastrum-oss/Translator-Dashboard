@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     dashboard_password: str = ""
     session_secret: str = ""
     session_ttl_hours: int = 168
+    # Must match the bot's USER_MONTHLY_CHARACTER_LIMIT.
+    free_monthly_chars: int = 15000
     api_key: str = ""
     app_env: str = "development"
     api_port: int = 8000

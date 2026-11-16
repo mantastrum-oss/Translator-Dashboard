@@ -9,7 +9,8 @@ const config: Config = {
         ink: 'rgb(var(--color-ink) / <alpha-value>)',
         surf: 'rgb(var(--color-surf) / <alpha-value>)',
         accent: '#1E847F',
-        coral: '#DA5A5A',
+        // Darker in light mode, lighter in dark mode: red text stays readable (AA) on both.
+        coral: 'rgb(var(--color-coral) / <alpha-value>)',
         amber: '#D49A1A'
       },
       fontFamily: {

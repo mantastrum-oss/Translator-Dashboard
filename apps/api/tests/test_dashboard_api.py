@@ -136,3 +136,44 @@ def test_top_abusers_ranks_by_request_count(client, api_key):
     assert rows[0]["successful_count"] == 1
     assert rows[0]["failed_count"] == 1
     assert rows[0]["success_rate"] == 0.5
+
+def test_user_and_server_search_covers_every_page(client, api_key):
+    base = {
+        "created_at_utc": "2026-08-05T12:00:00+00:00",
+        "source": "button",
+        "channel_id": "c1",
+        "target_lang": "es",
+        "char_count": 10,
+        "success": True,
+        "error_code": None,
+    }
+    for index in range(30):
+        event = {**base, "user_id": f"10000000000000{index:04d}", "guild_id": f"90000000000000{index:04d}", "char_count": 100 - index}
+        assert client.post("/v1/events/translation", json=event, headers=api_key).status_code == 202
+
+    # The match ranks last by characters, i.e. it is not on the first page.
+    users = client.get(
+        "/api/dashboard/users",
+        params={"start": "2026-08-01", "end": "2026-08-31", "page": 1, "page_size": 10, "q": "0029"},
+        headers=api_key,
+    ).json()
+    assert users["total_rows"] == 1
+    assert users["rows"][0]["user_id"] == "100000000000000029"
+
+    servers = client.get(
+        "/api/dashboard/guilds",
+        params={"start": "2026-08-01", "end": "2026-08-31", "page": 1, "page_size": 10, "q": "0029"},
+        headers=api_key,
+    ).json()
+    assert servers["total_rows"] == 1
+    assert servers["rows"][0]["guild_id"] == "900000000000000029"
+
+
+def test_search_treats_wildcards_literally(client, api_key):
+    response = client.get(
+        "/api/dashboard/users",
+        params={"start": "2026-08-01", "end": "2026-08-31", "q": "%"},
+        headers=api_key,
+    )
+    assert response.status_code == 200
+    assert response.json()["total_rows"] == 0

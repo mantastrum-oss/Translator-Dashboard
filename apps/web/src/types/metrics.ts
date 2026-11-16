@@ -159,3 +159,14 @@ export interface BlockedUsersResponse {
   page_size: number;
   total_rows: number;
 }
+
+export interface BillingResponse {
+  month: string;
+  available: boolean;
+  free_monthly_chars: number;
+  packs_sold: number;
+  revenue_cents: number;
+  currency: string;
+  users_reached_free_limit: number;
+  users_reached_and_bought: number;
+}
