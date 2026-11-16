@@ -169,4 +169,5 @@ export interface BillingResponse {
   currency: string;
   users_reached_free_limit: number;
   users_reached_and_bought: number;
+  buyers: number;
 }

@@ -273,3 +273,5 @@ class BillingResponse(BaseModel):
     currency: str
     users_reached_free_limit: int
     users_reached_and_bought: int
+    # Distinct users who bought a pack this month, whether or not they reached the limit.
+    buyers: int
