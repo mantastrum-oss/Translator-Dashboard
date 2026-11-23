@@ -1,5 +1,6 @@
 """Packs sold and free-allowance usage, read from the bot's Supabase tables
-(`user_packs`, `user_monthly_usage`; see the bot's schema_user_packs.sql)."""
+(`user_packs`, `user_monthly_usage`; see the bot's schema_user_packs.sql) plus
+refused translations (`translation_events` with error_code 'quota_exceeded')."""
 
 from typing import Any, Protocol
 
@@ -16,6 +17,8 @@ class _SupabaseLike(Protocol):
 
 
 _PAGE = 1000
+# error_code the bot sends when it refuses a translation because no characters are left.
+QUOTA_EXCEEDED = "quota_exceeded"
 
 
 def _all_rows(query: Any) -> list[dict]:
@@ -60,6 +63,17 @@ def billing_for_month(client: _SupabaseLike | None, month: str, free_monthly_cha
         for row in usage
         if int(row.get("used_chars") or 0) - int(row.get("paid_chars") or 0) >= free_monthly_chars
     }
+    # The bot refuses a translation (error_code 'quota_exceeded') only once the user
+    # has no characters left at all, so anyone refused this month used up the free part.
+    refused = _all_rows(
+        client.table("translation_events")
+        .select("user_id")
+        .eq("error_code", QUOTA_EXCEEDED)
+        .gte("created_at", start_utc.isoformat())
+        .lt("created_at", end_utc.isoformat())
+        .order("id")
+    )
+    reached |= {str(row["user_id"]) for row in refused}
     buyers = {pack["user_id"] for pack in kept}
 
     currencies = {str(pack.get("currency") or "eur").lower() for pack in kept}
